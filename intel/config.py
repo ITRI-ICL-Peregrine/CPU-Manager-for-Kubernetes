@@ -43,7 +43,7 @@ class Config:
             try:
                 c = k8s.get_config_map(None, self.cm_name, self.cm_namespace)
                 owner = c.metadata.annotations["Owner"]
-                if owner != "":
+                if owner != "" and owner != self.owner:
                     time.sleep(1)
                     continue
                 else:

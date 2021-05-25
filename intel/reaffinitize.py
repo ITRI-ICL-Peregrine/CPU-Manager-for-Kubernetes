@@ -1,4 +1,5 @@
 from . import k8s
+from . import reconfigure
 from kubernetes.client.rest import ApiException as K8sApiException
 import logging
 import psutil
@@ -16,7 +17,7 @@ def reaffinitize(node_name, namespace):
 def get_config_from_configmap(name, namespace):
     try:
         config = k8s.get_config_map(None, name, namespace)
-        config = yaml.safe_load(config["config"])
+        config = yaml.safe_load(config.data["config"])
     except K8sApiException as err:
         logging.error("Error while retreiving configmap {}".format(name))
         logging.error(err.reason)

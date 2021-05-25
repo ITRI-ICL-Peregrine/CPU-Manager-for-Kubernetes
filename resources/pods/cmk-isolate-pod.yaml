@@ -47,6 +47,13 @@ spec:
       capabilities:
         drop:
           - all
+    env:
+    - name: CMK_PROC_FS
+      value: "/host/proc"
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
   - name: cmk-isolate-shared
     image: cmk:v1.5.2
     command:
@@ -61,6 +68,13 @@ spec:
       capabilities:
         drop:
           - all
+    env:
+    - name: CMK_PROC_FS
+      value: "/host/proc"
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
   - name: cmk-isolate-infra
     image: cmk:v1.5.2
     command:
@@ -75,3 +89,10 @@ spec:
       capabilities:
         drop:
           - all
+    env:
+    - name: CMK_PROC_FS
+      value: "/host/proc"
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName

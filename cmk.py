@@ -32,7 +32,7 @@ Usage:
            [--shared-mode=<mode>] [--exclusive-mode=<mode>]
            [--excl-non-isolcpus=<list>] [--namespace=<name>]
   cmk discover [--namespace=<name>] [--no-taint]
-  cmk describe
+  cmk describe [--namespace=<name>]
   cmk reconcile [--publish] [--interval=<seconds>] [--namespace=<name>]
   cmk isolate [--socket-id=<num>] --pool=<pool> <command>
               [-- <args>...][--no-affinity] [--namespace=<name>]
@@ -145,7 +145,7 @@ def main():
         discover.discover(args["--namespace"], args["--no-taint"])
         return
     if args["describe"]:
-        describe.describe()
+        describe.describe(args["--namespace"])
         return
     if args["isolate"]:
         isolate.isolate(args["--pool"],

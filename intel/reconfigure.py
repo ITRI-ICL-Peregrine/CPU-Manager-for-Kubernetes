@@ -78,7 +78,7 @@ def reconfigure(node_name, num_exclusive_cores, num_shared_cores,
         conf.c_data = reconfigure_directory(conf.c_data, num_exclusive_cores,
                                             num_shared_cores, exclusive_mode,
                                             shared_mode, excl_non_isolcpus,
-                                            proc_info, procs, config_cm)
+                                            proc_info, procs, config_cm, namespace)
 
         configmap_name = "cmk-reconfigure-{}".format(node_name)
         set_config_map(configmap_name, namespace, procs)
@@ -154,7 +154,7 @@ def delete_config_map(name, namespace):
 
 def reconfigure_directory(c, num_exclusive_cores, num_shared_cores,
                           exclusive_mode, shared_mode, excl_non_isolcpus,
-                          proc_info, procs, config_cm):
+                          proc_info, procs, config_cm, namespace):
     platform = init.configure(num_exclusive_cores, num_shared_cores,
                               exclusive_mode, shared_mode,
                               excl_non_isolcpus)
@@ -178,11 +178,11 @@ def reconfigure_directory(c, num_exclusive_cores, num_shared_cores,
     if version >= util.parse_version("v1.8.1"):
         # Patch the node with the appropriate CMK ER.
         logging.debug("Patching the node with the appropriate CMK ER.")
-        discover.add_node_er()
+        discover.add_node_er(namespace)
     else:
         # Patch the node with the appropriate CMK OIR.
         logging.debug("Patching the node with the appropriate CMK OIR.")
-        discover.add_node_oir()
+        discover.add_node_oir(namespace)
 
     # How this function works, is it takes the new configuration (after
     # init.configure()) and compares it againts the objects in procs. If
