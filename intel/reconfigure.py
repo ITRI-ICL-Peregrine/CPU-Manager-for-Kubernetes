@@ -48,7 +48,7 @@ class Pid():
             self.new_clist += ",{}".format(clist)
 
 
-def reconfigure(node_name, num_exclusive_cores, num_shared_cores,
+def reconfigure(node_name, num_exclusive_cores, num_shared_cores, #node_name is redundant? since it will be reassigned in code below (if remove this argument, update the Usage section in cmk.py. Or, the reconfigure function was designed to allow user to specify node_name?
                 excl_non_isolcpus, exclusive_mode,
                 shared_mode, install_dir, namespace):
     # Build the current CMK confurations from the config directory
@@ -58,6 +58,8 @@ def reconfigure(node_name, num_exclusive_cores, num_shared_cores,
         sys.exit(1)
     node_name = k8s.get_node_from_pod(None, pod_name)
     config_cm = "cmk-config-{}".format(node_name)
+    logging.debug("yi1")
+    logging.debug("yi1-0 config_cm {} pod_name {} node_name {} namespace {}".format(config_cm, pod_name, node_name, namespace))
 
     conf = config.Config(config_cm, pod_name, namespace)
     num_exclusive_cores = int(num_exclusive_cores)
@@ -73,27 +75,34 @@ def reconfigure(node_name, num_exclusive_cores, num_shared_cores,
                                  parse_cpus_str(excl_non_isolcpus.
                                                 split(",")))
         check_processes(proc_info, num_exclusive_cores, num_excl_non_isols)
+        logging.debug("yi1-1")
 
         # Maybe can remove config_cm var and conf.c_data
         conf.c_data = reconfigure_directory(conf.c_data, num_exclusive_cores,
                                             num_shared_cores, exclusive_mode,
                                             shared_mode, excl_non_isolcpus,
                                             proc_info, procs, config_cm, namespace)
+        logging.debug("yi1-2")
 
         configmap_name = "cmk-reconfigure-{}".format(node_name)
         set_config_map(configmap_name, namespace, procs)
+        logging.debug("yi1-3")
 
         # Run the re-affinitization command in each of the pods on the node
-        all_pods = get_pods()
+        all_pods = get_pods() #TODO?: not to include non-cmk pods
         logging.info("Pods in node {}:".format(node_name))
         logging.info(all_pods)
+        logging.debug("yi1-4")
 
         execute_reconfigure(install_dir, node_name, all_pods, namespace)
+        logging.debug("yi1-5")
 
     finally:
         conf.unlock()
+        logging.debug("yi1-6")
 
-        delete_config_map(configmap_name, namespace)
+        delete_config_map(configmap_name, namespace) #TODO debug: if exception occured before "configmap_name" being derived, here error
+        logging.debug("yi1-7")
 
 
 def check_processes(proc_info, num_exclusive_cores, num_excl_non_isols):
@@ -131,6 +140,7 @@ def check_processes(proc_info, num_exclusive_cores, num_excl_non_isols):
 
 def set_config_map(name, namespace, config):
     configmap = k8sclient.V1ConfigMap()
+    logging.debug("yi1-2a:\nconfig={}\n\nyaml.dump(config)={}\n".format(config, yaml.dump(config)))
     data = {
         "config": yaml.dump(config)
     }
@@ -305,15 +315,15 @@ def get_pods():
 
 
 def execute_reconfigure(install_dir, node_name, all_pods, namespace):
-    exec_command = ['/opt/bin/cmk', 'reaffinitize',
+    exec_command = ['/cmk/cmk.py', 'reaffinitize',#bug fix: original cmk execution command is "/opt/bin/cmk"
                     '--node-name={}'.format(node_name),
                     '--namespace={}'.format(namespace)]
 
     api = k8sclient.CoreV1Api()
 
     for pod in all_pods:
-        logging.info("Executing on pod {} in namespace {}"
-                     .format(pod["name"], pod["namespace"]))
+        logging.info("Executing on pod {} in namespace {}, exec_command: {}"
+                     .format(pod["name"], pod["namespace"], exec_command))
         try:
             for c in pod["containers"]:
                 resp = stream.stream(api.connect_get_namespaced_pod_exec,
