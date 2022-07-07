@@ -17,13 +17,34 @@ limitations under the License.
 # Quick Start for ITRI-X-K8s
 ## Manual
 1. Checkout source code, locate the directory as ```/home/ubuntu/cmk``` (rename ```CPU-Manager-for-Kubernetes``` directory to ```cmk```)
-2. Get image: ```docker pull ylhsiehitri/cmk:v1.5.2b``` (this image is based on Ubuntu, the cmk required library packages is README TODO later)
+2. Get image:
+```
+docker pull ylhsiehitri/cmk:v1.5.2b
+```
+(this image is based on Ubuntu, the cmk required library packages is README TODO later)
+
 3. Install CMK:
-* Change to cmk-namespace namespace: ```kubectl config set-context $(kubectl config current-context) --namespace cmk-namespace```
-* Untaint: ```kubectl taint nodes <node_name> cmk:NoSchedule-```
-* Edit setup yaml: ```vi /home/ubuntu/cmk/resources/pods/cmk-cluster-init-pod-v2.yaml```, fill in correct ```--host-list``` (e.g.```--host-list=node1,node2```)
-* Setup CMK: ```kubectl create -f /home/ubuntu/cmk/resources/pods/cmk-cluster-init-pod-v2.yaml```
-5. Create a cmk isolated pod: ```kubectl create -f /home/ubuntu/cmk/resources/pods/test-pod.yaml```
+* Change to cmk-namespace namespace:
+```
+kubectl config set-context $(kubectl config current-context) --namespace cmk-namespace
+```
+* Untaint: 
+```
+kubectl taint nodes <node_name> cmk:NoSchedule-
+```
+* Edit setup yaml: 
+```
+vi /home/ubuntu/cmk/resources/pods/cmk-cluster-init-pod-v2.yaml
+```
+fill in correct ```--host-list``` (e.g.```--host-list=node1,node2```)
+* Setup CMK: 
+```
+kubectl create -f /home/ubuntu/cmk/resources/pods/cmk-cluster-init-pod-v2.yaml
+```
+4. Create a cmk isolated pod: 
+```
+kubectl create -f /home/ubuntu/cmk/resources/pods/test-pod.yaml
+```
 
 # CPU Manager for Kubernetes
 
