@@ -32,7 +32,7 @@ Usage:
            [--shared-mode=<mode>] [--exclusive-mode=<mode>]
            [--excl-non-isolcpus=<list>] [--namespace=<name>]
   cmk discover [--namespace=<name>] [--no-taint]
-  cmk describe
+  cmk describe [--namespace=<name>]
   cmk reconcile [--publish] [--interval=<seconds>] [--namespace=<name>]
   cmk isolate [--socket-id=<num>] --pool=<pool> <command>
               [-- <args>...][--no-affinity] [--namespace=<name>]
@@ -52,6 +52,7 @@ Usage:
                         [--install-dir=<dir>] [--saname=<name>]
                         [--namespace=<name>]
   cmk reaffinitize [--node-name=<name>] [--namespace=<name>]
+  cmk reaffinitize_process_cores [--pid=<pid>] [--cores=<cores>]
 
 Options:
   -h --help                    Show this screen.
@@ -92,7 +93,7 @@ Options:
                                own processes and/or tasks to the assigned CPUs.
   --namespace=<name>           Set the namespace to deploy pods to during the
                                cluster-init deployment process.
-                               [default: default].
+                               [default: cmk-namespace].
   --excl-non-isolcpus=<list>   List of physical cores to be added to the extra
                                exclusive pool, not governed by isolcpus. Both
                                hyperthreads of the core will be added to the pool
@@ -105,6 +106,8 @@ Options:
                                authenticate using mutual TLS or not.
                                [default: False]
   --no-taint                   Don't taint Kubernetes nodes.
+  --pid=<pid>                  PID of the process to be set core affinity
+  --cores=<cores>              New core affinity of the process to be set core affinity
 """  # noqa: E501
 from intel import (
     clusterinit, describe, discover, init, install,
@@ -145,7 +148,7 @@ def main():
         discover.discover(args["--namespace"], args["--no-taint"])
         return
     if args["describe"]:
-        describe.describe()
+        describe.describe(args["--namespace"])
         return
     if args["isolate"]:
         isolate.isolate(args["--pool"],
@@ -205,9 +208,15 @@ def main():
         reaffinitize.reaffinitize(args["--node-name"], args["--namespace"])
         return
 
+    if args["reaffinitize_process_cores"]:
+        pid = int(args["--pid"])
+        cores = [int(c) for c in args["--cores"].split(",")]
+        reaffinitize.reaffinitize_process_cores(pid, cores)
+        return
+
 
 def setup_logging():
-    level = os.getenv("CMK_LOG_LEVEL", logging.INFO)
+    level = os.getenv("CMK_LOG_LEVEL", logging.DEBUG)
     logging.basicConfig(level=level)
 
 

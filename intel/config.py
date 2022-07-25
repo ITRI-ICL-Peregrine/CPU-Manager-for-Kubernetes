@@ -41,14 +41,19 @@ class Config:
         time.sleep(random.random())
         while True:
             try:
+                logging.debug("Going to call k8s_get_cnfg_map() with cm_name {} cm_namepace {}".format(self.cm_name, self.cm_namespace))
                 c = k8s.get_config_map(None, self.cm_name, self.cm_namespace)
+                logging.debug("yi2")
                 owner = c.metadata.annotations["Owner"]
-                if owner != "":
+                if owner != "" and owner != self.owner:
+                    logging.debug("yi2-1")
                     time.sleep(1)
                     continue
-                else:
+                else: #owner == "" or owner = self.owner
+                    logging.debug("yi2-2")
                     c.metadata.annotations["Owner"] = self.owner
                     try:
+                        logging.debug("yi2-2-1")
                         k8s.patch_config_map(None, self.cm_name,
                                              c, self.cm_namespace)
                     except K8sApiException as err:
@@ -56,15 +61,18 @@ class Config:
                                       .format(self.cm_name))
                         logging.error(err.reason)
                         sys.exit(1)
+                    logging.debug("yi2-3")
 
                 self.c = c
                 self.c_data = build_config(yaml.safe_load(c.data["config"]))
+                logging.debug("yi2-4")
                 break
             except K8sApiException as err:
                 logging.error("Error while retreiving configmap {}"
                               .format(self.cm_name))
                 logging.error(err.reason)
                 sys.exit(1)
+            logging.debug("yi2-5")
 
     def unlock(self):
         self.c.metadata.annotations["Owner"] = ""
